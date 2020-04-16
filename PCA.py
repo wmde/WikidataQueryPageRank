@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 
 data = []
-xyz = ['labels', 'sitelinks', 'ext_ids']
+xyz = ['labels', 'sitelinks', 'ext_ids_count']
 i_mapping = []
 with open(sys.argv[1], 'r') as f:
     for line in f.read().split('\n'):
@@ -18,6 +18,9 @@ with open(sys.argv[1], 'r') as f:
         data.append([math.log(line[d] + 1) for d in xyz])
         #data.append([line[d] for d in xyz])
         i_mapping.append(line['id'])
+
+#print ("data = ", data)
+#print ("i_mapping = ", i_mapping)
 #means = []
 #stds = []
 # for i in range(len(data[0])):
