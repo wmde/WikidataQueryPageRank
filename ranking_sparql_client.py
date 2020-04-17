@@ -3,6 +3,11 @@ import requests
 import sys
 import getopt
 from SPARQLWrapper import SPARQLWrapper, JSON
+from dictor import dictor
+
+WIKIDATA_URL = "https://www.wikidata.org/w/api.php?action=wbgetentities&format=json"
+SPARQL_URL = "https://query.wikidata.org/sparql"
+
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -10,8 +15,6 @@ def eprint(*args, **kwargs):
 class RankingSPARQLClient(object):
 
     def __init__(self, path, q_field):
-        self.wikidata_url = "https://www.wikidata.org/w/api.php?action=wbgetentities&format=json"
-        self.sparql_url = "https://query.wikidata.org/sparql"
         self.path = path
         self.q_field = q_field
 
@@ -22,7 +25,7 @@ class RankingSPARQLClient(object):
 
     def query_sparql(self, query):
         user_agent = "WikidataQueryPageRank (https://github.com/wmde/WikidataQueryPageRank) Python/%s.%s" % (sys.version_info[0], sys.version_info[1])
-        sparql = SPARQLWrapper(self.sparql_url, agent=user_agent)
+        sparql = SPARQLWrapper(SPARQL_URL, agent=user_agent)
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
         return sparql.query().convert()["results"]["bindings"]
@@ -78,19 +81,16 @@ class RankingSPARQLClient(object):
         return q_url.rsplit("/",1)[1]
 
     def request_entities(self, q_ids):
-        result = []
         # the API endpoint doesn't accept more than 50 Q-ids, so
         # if necessary, we split here and do multiple requests in a row
         chunks = [q_ids[n:n+50] for n in range(0, len(q_ids), 50)]
         for chunk in chunks:
-            url = self.wikidata_url + "&ids=" + "|".join(chunk)
+            url = WIKIDATA_URL + "&ids=" + "|".join(chunk)
             eprint("requesting", url)
             response = requests.get(url)
             entities = json.loads(response.text)["entities"]
             for key, item in entities.items():
-                result.append(item)
-
-        return result
+                yield item
 
     def collect_metadata(self, q_ids):
         metadata = {}
@@ -123,13 +123,20 @@ class RankingSPARQLClient(object):
 
         return metadata
 
+    def rank_results(self, results, field):
+        if dictor(results[0], field) is None:
+            eprint("Could not find ranking field '"+field+"' in result:", results[0])
+            exit(2)
+
+        return sorted(results, key=lambda x: dictor(x, field),reverse=True)
 
 # default q-field
 q_field = "item"
+rank_by = "item"
 
 # read command line options
 try:
-    opts, args = getopt.getopt(sys.argv[1:],"hq:",["q-field="])
+    opts, args = getopt.getopt(sys.argv[1:],"hq:r:",["q-field=", "rank-by="])
 except getopt.GetoptError:
     print(sys.argv[0] + '[--q-field=<qfieldname>] <queryfile>')
     sys.exit(2)
@@ -139,6 +146,8 @@ for opt, arg in opts:
         sys.exit()
     elif opt in ("-q", "--q-field"):
         q_field = arg
+    elif opt in ("-r", "--rank-by"):
+        rank_by = arg
 queryfile = args[0]
 
 sparql_client = RankingSPARQLClient(queryfile, q_field)
@@ -158,7 +167,10 @@ metadata = sparql_client.collect_metadata(q_ids)
 # combine query results with entity metadata
 flat_results = sparql_client.combine_results(query_results, metadata)
 
-print(json.dumps(flat_results, indent=2))
+# rank results according to command line parameter --rank-by
+ranked_results = sparql_client.rank_results(flat_results, rank_by)
+
+print(json.dumps(ranked_results, indent=2))
 eprint("found " + str(len(flat_results)) + " results")
 
 
