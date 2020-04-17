@@ -1,0 +1,6 @@
+SELECT ?disease ?diseaseLabel (MAX(?cases) AS ?numOfCases)
+WHERE {
+  ?disease wdt:P31/wdt:P279* wd:Q18123741 . # infectious disease
+  ?disease wdt:P1603 ?cases . # number of cases
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+} GROUP BY ?disease ?diseaseLabel ORDER BY DESC(?numOfCases)

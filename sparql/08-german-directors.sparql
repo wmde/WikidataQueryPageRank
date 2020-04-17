@@ -1,0 +1,7 @@
+SELECT ?directorLabel ?director WHERE {
+  ?movie wdt:P57 ?director .
+  ?director wdt:P27 wd:Q183
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+GROUP BY ?director ?directorLabel
+ORDER BY ?directorLabel

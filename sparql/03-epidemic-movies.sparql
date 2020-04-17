@@ -1,0 +1,5 @@
+SELECT DISTINCT ?film ?filmLabel WHERE {
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+  ?film wdt:P31 wd:Q11424;
+    wdt:P921 wd:Q44512.
+}

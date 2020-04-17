@@ -1,0 +1,6 @@
+SELECT ?image ?person ?personLabel WHERE {
+  ?person wdt:P31 wd:Q5.
+  ?person wdt:P1050 wd:Q84263196.
+  OPTIONAL { ?person wdt:P18 ?image. }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en, fr". }
+}
