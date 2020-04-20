@@ -16,7 +16,7 @@ for i in $(seq 1 8) ; do
   offset=$((1+$i*10))
   echo "creating $json_file by slicing $ranking_threshold items from $GOLD_FILE, starting at line $(($offset-10))"
   echo $header > tmp.csv
-  head -n $offset $GOLD_FILE | tail -n 10 | grep -v "^;;" >> tmp.csv
+  head -n $offset $GOLD_FILE | tail -n 10 | grep -v "^\"\";" >> tmp.csv
   $CSVJSON -k qid tmp.csv > $json_file
   rm tmp.csv
 done
