@@ -1,4 +1,4 @@
-SELECT ?awardLabel ?item ?itemLabel (GROUP_CONCAT(?winnerLabel; SEPARATOR = ", ") AS ?winners) ?work ?workLabel ?role ?roleLabel WHERE {
+SELECT ?award ?awardLabel ?itemLabel (GROUP_CONCAT(?winnerLabel; SEPARATOR = ", ") AS ?winners) ?work ?workLabel ?role ?roleLabel WHERE {
   ?item p:P166 ?awardStatement.
   ?awardStatement ps:P166 ?award;
     pq:P805 wd:Q47496499.
@@ -14,4 +14,4 @@ SELECT ?awardLabel ?item ?itemLabel (GROUP_CONCAT(?winnerLabel; SEPARATOR = ", "
     ?role  rdfs:label ?roleLabel.
   }
 }
-GROUP BY ?awardLabel ?item ?itemLabel ?work ?workLabel ?role ?roleLabel
+GROUP BY ?award ?awardLabel ?item ?itemLabel ?work ?workLabel ?role ?roleLabel
