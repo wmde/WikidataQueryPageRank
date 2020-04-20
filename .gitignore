@@ -134,3 +134,4 @@ dmypy.json
 # cache dirs
 results/
 metadata/
+gold_ranks/*.json
